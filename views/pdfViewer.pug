@@ -1,0 +1,9 @@
+doctype html
+html
+  head
+    title PDF Viewer
+  body
+    embed(src=pdfPath, type="application/pdf", width="100%" )
+    p
+      | Alternative text - include a link
+      a(href=pdfPath, target="_blank", rel="noopener noreferrer") Open PDF in new tab
