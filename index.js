@@ -26,25 +26,38 @@ app.post("/upload", upload.single("PDFFile"), async (req, res) => {
                     return;
                 }
                 // File deleted, proceed with saving new file
-                saveFile(filePath, file, res);
+                saveFile(filePath, file, Chapter_id, res);
             });
         } else {
             // File does not exist, proceed with saving new file
-            saveFile(filePath, file, res);
+            saveFile(filePath, file,Chapter_id, res);
         }
     });
 });
 
-function saveFile(filePath, file, res) {
-    fs.writeFile(filePath, file, function (err) {
+async function saveFile(filePath, file,Chapter_id, res) {
+    const data = await convertPdfToImg(file)
+    console.log(data)
+    fs.mkdir('resources/'+Chapter_id, (err) => {
+        if (err) {
+          console.error('Error creating folder:', err);
+          return;
+        }
+        console.log('Folder created successfully');
+      });
+   for(let i=0 ; i<data.length ; i++){
+    fs.writeFile(`resources/${Chapter_id}/${i}.png`, data[i].content, function (err) {
         if (err) {
             console.error('Error saving file:', err);
             res.status(500).json({ error: 'Failed to save file' });
             return;
         }
-        console.log('File saved!');
-        res.json({ path: filePath });
-    });
+    })
+    console.log(`resources/${Chapter_id}/${i}.png`)
+}
+
+    console.log('File saved!');
+    res.json({ path: filePath });
 }
 
 
@@ -63,9 +76,7 @@ app.get("/view/:fileName", (req, res) => {
         if (err) {
             return res.status(404).json({ error: "File not found" });
         }
-
         // Render the Pug template with the PDF file path
-        
         res.render('pdfViewer', { pdfPath: `/resources/${fileName}` });
     });
 });
@@ -89,3 +100,19 @@ app.get("/resources/:fileName", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+
+
+
+
+
+const pdfToPng = require('pdf-to-png-converter').pdfToPng;
+
+convertPdfToImg = async (buffer) => {
+    const pngPage = await pdfToPng(buffer, {
+        disableFontFace: false,
+        useSystemFonts: false,
+        // pagesToProcess: [1],
+        viewportScale: 2.0
+    });
+    return  pngPage;
+}
