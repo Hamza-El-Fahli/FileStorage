@@ -17,15 +17,26 @@ app.post("/upload", upload.single("PDFFile"), async (req, res) => {
     const filePath = `resources/${Chapter_id}.pdf`;
 console.log('file uploaded')
 
-    fs.access(filePath, fs.constants.F_OK, (err) => {
+    fs.access(filePath, fs.constants.F_OK,async (err) => {
         if (!err) {
             // File exists, so delete it
-            fs.unlink(filePath, (unlinkErr) => {
+            fs.unlink(filePath,async (unlinkErr) => {
                 if (unlinkErr) {
                     console.error('Error deleting file:', unlinkErr);
                     res.status(500).json({ error: 'Failed to replace file' });
                     return;
                 }
+
+                await fs.mkdir('resources/'+Chapter_id,async (err) => {
+                    if (err) {
+                        //   console.error('Error creating folder:', err);
+                        console.log('Deleting execisting folder\'s content ....')
+                      await  deleteFolderRecursive(filePath.split('.pdf')[0]);
+            
+                      return;
+                    }
+                    console.log('Folder created successfully');
+                  });
                 // File deleted, proceed with saving new file
                 saveFile(filePath, file, Chapter_id, res);
             });
@@ -39,16 +50,7 @@ console.log('file uploaded')
 async function saveFile(filePath, file,Chapter_id, res) {
     const data = await convertPdfToImg(file)
     
-     await fs.mkdir('resources/'+Chapter_id,async (err) => {
-        if (err) {
-        //   console.error('Error creating folder:', err);
-        console.log('Deleting execisting folder\'s content ....')
-        //   await deleteFolderRecursive(filePath.split('.pdf')[0]);
-
-          return;
-        }
-        console.log('Folder created successfully');
-      });
+      
    for(let i=0 ; i<data.length ; i++){
      fs.writeFile(`resources/${Chapter_id}/${i}.png`, data[i].content, function (err) {
         if (err) {
@@ -127,16 +129,31 @@ convertPdfToImg = async (buffer) => {
     return  pngPage;
 }
 
-async function deleteFolderRecursive(path, callback) {
-    const folderPath = path.split('/').join('\\')
-    console.log(folderPath+'\\*"')
-    exec('del  /q "'+folderPath+'\\*"', (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Error executing command: ${error}`);
-          return;
+async function deleteFolderRecursive(resourcesFolderPath, callback) {
+    fs.readdir(resourcesFolderPath, (err, files) => {
+        if (err) {
+            console.error('Error reading resources folder:', err);
+            return res.status(500).json({ error: 'Failed to read resources folder' });
         }
-        console.log(`stdout: ${stdout}`);
-        console.error(`stderr: ${stderr}`);
-      });
+
+        // Filter only files with .png, .jpg, and .jpeg extensions
+        const imageFiles = files.filter(file => {
+            const ext = path.extname(file).toLowerCase();
+            return ext === '.png' || ext === '.jpg' || ext === '.jpeg';
+        });
+
+        // Delete each image file
+        imageFiles.forEach(imageFile => {
+            const imagePath = path.join(resourcesFolderPath, imageFile);
+            fs.unlink(imagePath, err => {
+                if (err) {
+                    console.error(`Error deleting image ${imageFile}:`, err);
+                } else {
+                    console.log(`Image ${imageFile} deleted successfully`);
+                }
+            });
+        });
+    });
+
       console.log('existing folder deleted successfully')
 }
