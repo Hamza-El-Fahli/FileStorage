@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-
+const { exec } = require("child_process");
 const app = express();
 const PORT = 7676;
 
@@ -15,6 +15,7 @@ app.post("/upload", upload.single("PDFFile"), async (req, res) => {
     const file = req.file.buffer;
     const Chapter_id = req.body.Chapter_id;
     const filePath = `resources/${Chapter_id}.pdf`;
+console.log('file uploaded')
 
     fs.access(filePath, fs.constants.F_OK, (err) => {
         if (!err) {
@@ -37,16 +38,19 @@ app.post("/upload", upload.single("PDFFile"), async (req, res) => {
 
 async function saveFile(filePath, file,Chapter_id, res) {
     const data = await convertPdfToImg(file)
-    console.log(data)
-    fs.mkdir('resources/'+Chapter_id, (err) => {
+    
+     await fs.mkdir('resources/'+Chapter_id,async (err) => {
         if (err) {
-          console.error('Error creating folder:', err);
+        //   console.error('Error creating folder:', err);
+        console.log('Deleting execisting folder\'s content ....')
+        //   await deleteFolderRecursive(filePath.split('.pdf')[0]);
+
           return;
         }
         console.log('Folder created successfully');
       });
    for(let i=0 ; i<data.length ; i++){
-    fs.writeFile(`resources/${Chapter_id}/${i}.png`, data[i].content, function (err) {
+     fs.writeFile(`resources/${Chapter_id}/${i}.png`, data[i].content, function (err) {
         if (err) {
             console.error('Error saving file:', err);
             res.status(500).json({ error: 'Failed to save file' });
@@ -55,8 +59,14 @@ async function saveFile(filePath, file,Chapter_id, res) {
     })
     console.log(`resources/${Chapter_id}/${i}.png`)
 }
-
+fs.writeFile(`${filePath}`, file, function (err) {
+    if (err) {
+        console.error('Error saving file:', err);
+        res.status(500).json({ error: 'Failed to save file' });
+        return;
+    }
     console.log('File saved!');
+})
     res.json({ path: filePath });
 }
 
@@ -115,4 +125,18 @@ convertPdfToImg = async (buffer) => {
         viewportScale: 2.0
     });
     return  pngPage;
+}
+
+async function deleteFolderRecursive(path, callback) {
+    const folderPath = path.split('/').join('\\')
+    console.log(folderPath+'\\*"')
+    exec('del  /q "'+folderPath+'\\*"', (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error executing command: ${error}`);
+          return;
+        }
+        console.log(`stdout: ${stdout}`);
+        console.error(`stderr: ${stderr}`);
+      });
+      console.log('existing folder deleted successfully')
 }
