@@ -115,9 +115,8 @@ app.get("/view/:folderName", (req, res) => {
 // Define the route to serve the PDF file for viewing
 app.get("/image/:folderName/:imageName", (req, res) => {
     const folderName = req.params.folderName;
-    const imageName = req.params.imageName;
+    const imageName = req.params.imageName+'.jpg';
     const imagePath = path.join(__dirname, "resources", folderName, imageName);
-
     fs.readFile(imagePath, (err, data) => {
         if (err) {
             return res.status(404).json({ error: "Image not found" });
@@ -152,7 +151,7 @@ function getImageContentType(filePath) {
 
 // Handle GET requests to download a file
 app.get("/resources/:fileName", (req, res) => {
-    const fileName = req.params.fileName;
+    const fileName = req.params.fileName+".pdf";
     const filePath = path.join(__dirname, "resources", fileName);
 
     fs.access(filePath, fs.constants.F_OK, (err) => {
