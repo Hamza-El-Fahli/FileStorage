@@ -20,6 +20,17 @@ app.post("/upload", upload.single("PDFFile"), async (req, res) => {
 
     fs.access(filePath, fs.constants.F_OK, async (err) => {
         if (!err) {
+            // if folder exists then clean it
+            fs.mkdir('resources/' + Chapter_id, async (err) => {
+                if (err) {
+                    //   console.error('Error creating folder:', err);
+                    console.log('Deleting execisting folder\'s content ....')
+                    await deleteFolderRecursive(filePath.split('.pdf')[0]);
+
+                    return;
+                }
+                console.log('Folder created successfully');
+            });
             // File exists, so delete it
             fs.unlink(filePath, async (unlinkErr) => {
                 if (unlinkErr) {
@@ -28,16 +39,7 @@ app.post("/upload", upload.single("PDFFile"), async (req, res) => {
                     return;
                 }
 
-            fs.mkdir('resources/' + Chapter_id, async (err) => {
-                    if (err) {
-                        //   console.error('Error creating folder:', err);
-                        console.log('Deleting execisting folder\'s content ....')
-                        await deleteFolderRecursive(filePath.split('.pdf')[0]);
-
-                        return;
-                    }
-                    console.log('Folder created successfully');
-                });
+            
                 // File deleted, proceed with saving new file
                 saveFile(filePath, file, Chapter_id, res);
             });
@@ -62,6 +64,15 @@ async function saveFile(filePath, file, Chapter_id, res) {
     //     })
     //     console.log(`resources/${Chapter_id}/${i}.png`)
     // }
+
+    fs.mkdir('resources/' + Chapter_id, async (err) => {
+        if (err) {
+            //   console.error('Error creating folder:', err);
+            console.log('Deleting execisting folder\'s content ....')
+            return;
+        }
+        console.log('Folder created successfully');
+    });
     fs.writeFile(`${filePath}`, file, function (err) {
         if (err) {
             console.error('Error saving file:', err);
