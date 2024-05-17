@@ -13,7 +13,10 @@
     "express-formidable": "^1.2.0",
     "fs-extra": "^11.2.0",
     "multer": "^1.4.5-lts.1",
+    "pdf-poppler": "^0.2.1",
     "pdf-to-png-converter": "^3.2.0",
-    "pug": "^3.0.2"
+    "pdf2pic": "^3.1.1",
+    "pug": "^3.0.2",
+    "rimraf": "^5.0.7"
   }
 }
