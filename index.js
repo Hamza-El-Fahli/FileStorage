@@ -104,7 +104,7 @@ app.get("/view/:folderName", (req, res) => {
         }
 
         // Construct an array of image URLs
-        const imageUrls = files.map(fileName => `/resources/${folderName}/${fileName}`);
+        const imageUrls = files.map(fileName => `http://192.168.233.1:${PORT}/image/${folderName}/${fileName.split('.jpg')[0]}`);
 
         // Render the Pug template with the image URLs
         res.json({ imageUrls });
@@ -122,9 +122,7 @@ app.get("/image/:folderName/:imageName", (req, res) => {
             return res.status(404).json({ error: "Image not found" });
         }
 
-        // Set content type based on image file extension
         const contentType = getImageContentType(imagePath);
-
         res.set('Content-Type', contentType);
         res.send(data);
     });
