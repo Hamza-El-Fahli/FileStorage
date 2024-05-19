@@ -6,7 +6,7 @@ const { exec } = require("child_process");
 const pfd2img = require("./pfd2img");
 const app = express();
 const PORT = 7676;
-
+const Next_server = '192.168.1.12'
 
 const upload = multer();
 
@@ -104,7 +104,7 @@ app.get("/view/:folderName", (req, res) => {
         }
 
         // Construct an array of image URLs
-        const imageUrls = files.map(fileName => `http://192.168.233.1:${PORT}/image/${folderName}/${fileName.split('.jpg')[0]}`);
+        const imageUrls = files.map(fileName => `http://${Next_server}:${PORT}/image/${folderName}/${fileName.split('.jpg')[0]}`);
 
         // Render the Pug template with the image URLs
         res.json({ imageUrls });
