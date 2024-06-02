@@ -36,6 +36,11 @@ async function deleteFolderRecursive(resourcesFolderPath, callback) {
 
 // Saves a PDF file and converts it to images
 async function saveFile(filePath, file, Chapter_id, res) {
+    // Check if the directory exists, if not create it
+    const directory = "resources/"+Chapter_id;
+    if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory, { recursive: true });
+    }
     // Save the PDF file
     fs.writeFileSync(filePath, file);
     console.log('PDF file saved! ');
