@@ -8,7 +8,7 @@ const path = require("path");
 const fs = require("fs");
 const app = express();
 const PORT = 7676;
-const Next_server = '192.168.1.12'
+const Next_server = '192.168.1.13'
 const {deleteFolderRecursive,saveFile} = require("./lib")
 const upload = multer();
 
@@ -18,6 +18,10 @@ app.post("/upload", upload.single("PDFFile"), async (req, res) => {
     const Chapter_id = req.body.Chapter_id;
     const filePath = `resources/${Chapter_id}.pdf`;
     console.log('file uploaded')
+    if(!Chapter_id || isNaN(parseInt(Chapter_id))){
+        res.status(500).json({ error: 'Chapter ID is null' });
+
+    }
 
     fs.access(filePath, fs.constants.F_OK, async (err) => {
         if (!err) {
