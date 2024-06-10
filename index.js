@@ -8,7 +8,7 @@ const path = require("path");
 const fs = require("fs");
 const app = express();
 const PORT = 7676;
-const Next_server = '192.168.1.13'
+const Next_server = '172.17.0.1'
 const {deleteFolderRecursive,saveFile} = require("./lib")
 const upload = multer();
 
